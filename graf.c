@@ -213,8 +213,8 @@ bool is_connected(const Graph *graph) {
 }
 
 void print_graph(const Graph *graph) {
-    printf("Graf (wierzchołki: %d/%d):\n", graph->num_vertices, graph->max_vertices);
-    printf("Struktura CSR:\n");
+    printf("Graf (wierzcholki: %d/%d):\n", graph->num_vertices, graph->max_vertices);
+    /*printf("Struktura CSR:\n");
     printf("col_index: ");
     for (int i = 0; i < graph->row_ptr[graph->num_vertices]; i++) {
         printf("%d ", graph->col_index[i]);
@@ -223,8 +223,8 @@ void print_graph(const Graph *graph) {
     for (int i = 0; i <= graph->num_vertices; i++) {
         printf("%d ", graph->row_ptr[i]);
     }
-    
-    printf("\nLista sąsiedztwa:\n");
+    */
+    printf("\nLista sasiedztwa:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
         printf("%d (grupa %d): ", i, graph->group_assignment[i]);
         for (int j = 0; j < graph->neighbor_count[i]; j++) {

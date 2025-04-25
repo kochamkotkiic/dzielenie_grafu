@@ -18,6 +18,8 @@ typedef struct {
     // Dodatkowe dane
     int max_distances[MAX_VERTICES];
     int group_assignment[MAX_VERTICES];
+    int component[MAX_VERTICES]; // Przynależność do składowej spójnej
+    int num_components;          // Liczba składowych spójnych
     
     // Reprezentacja CSR
     int* col_index;
