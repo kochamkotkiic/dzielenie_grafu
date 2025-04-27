@@ -357,12 +357,45 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         int size_diff = abs(*group1_size - *group2_size);
         if (size_diff > margin) {
             if (balance_groups(graph, group1, group1_size, group2, group2_size, margin)) {
+                split_graph(graph);
                 return true;
             }
         } else {
+            split_graph(graph);
             return true;
         }
     }
     
     return false;
+}
+
+void split_graph(Graph *graph) {
+    int new_component_id = graph->num_components; // nowa składowa
+    // Aktualizacja przypisań komponentów
+    for (int i = 0; i < graph->num_vertices; i++) {
+        if (graph->group_assignment[i] == 2) {
+            graph->component[i] = new_component_id;
+        }
+    }
+    graph->num_components++;
+
+    // Usuwanie krawędzi między grupami
+    for (int i = 0; i < graph->num_vertices; i++) {
+        int new_neighbors[MAX_NEIGHBORS];
+        int new_neighbor_count = 0;
+
+        for (int j = 0; j < graph->neighbor_count[i]; j++) {
+            int neighbor = graph->neighbors[i][j];
+            // Zostaw tylko krawędzie wewnątrz tej samej grupy
+            if (graph->group_assignment[i] == graph->group_assignment[neighbor]) {
+                new_neighbors[new_neighbor_count++] = neighbor;
+            }
+        }
+        
+        // Nadpisanie nowej listy sąsiadów
+        for (int j = 0; j < new_neighbor_count; j++) {
+            graph->neighbors[i][j] = new_neighbors[j];
+        }
+        graph->neighbor_count[i] = new_neighbor_count;
+    }
 }
