@@ -71,7 +71,7 @@ void add_edge(Graph *graph, int u, int v) {
 }
 void convert_csr_to_neighbors(Graph *graph) {
     // Wyczyszczenie listy sąsiedztwa
-    printf("Inicjalizacja: czyszczenie listy sasiedztwa...\n");
+    //printf("Inicjalizacja: czyszczenie listy sasiedztwa...\n");
     for (int i = 0; i < MAX_VERTICES; i++) {
         graph->neighbor_count[i] = 0;
         for (int j = 0; j < MAX_NEIGHBORS; j++) {
@@ -80,7 +80,7 @@ void convert_csr_to_neighbors(Graph *graph) {
         graph->group_assignment[i] = 0;
     }
     
-    printf("\nRozpoczecie przetwarzania grup...\n");
+    //printf("\nRozpoczecie przetwarzania grup...\n");
     int total_groups = 0;
     
     // Najpierw znajdź rzeczywistą liczbę grup
@@ -88,7 +88,7 @@ void convert_csr_to_neighbors(Graph *graph) {
            (total_groups == 0 || graph->group_ptr[total_groups] != 0)) {
         total_groups++;
     }
-    printf("Znaleziono %d grup do przetworzenia\n", total_groups);
+    //printf("Znaleziono %d grup do przetworzenia\n", total_groups);
 
     // Przetwarzanie każdej grupy
     for (int g = 0; g < total_groups; g++) {
@@ -97,31 +97,31 @@ void convert_csr_to_neighbors(Graph *graph) {
         
         // Sprawdź czy grupa jest pusta
         if (end_idx < start_idx) {
-            printf("Grupa %d: pusta (indeksy %d-%d), pomijanie\n", g+1, start_idx, end_idx);
+            //printf("Grupa %d: pusta (indeksy %d-%d), pomijanie\n", g+1, start_idx, end_idx);
             continue;
         }
 
         int leader = graph->group_list[start_idx];
-        printf("\nGrupa %d: lider=%d, zakres=[%d-%d], elementy=", 
-              g+1, leader, start_idx, end_idx);
+        //printf("\nGrupa %d: lider=%d, zakres=[%d-%d], elementy=", 
+              //g+1, leader, start_idx, end_idx);
         
         // Wypisz wszystkie elementy grupy
         for (int i = start_idx; i <= end_idx; i++) {
-            printf("%d ", graph->group_list[i]);
+            //printf("%d ", graph->group_list[i]);
         }
-        printf("\n");
+        //printf("\n");
 
         // Przypisz lidera do grupy
         graph->group_assignment[leader] = g + 1;
-        printf("Przypisano lidera %d do grupy %d\n", leader, g+1);
+        //printf("Przypisano lidera %d do grupy %d\n", leader, g+1);
 
         // Dodawanie krawędzi lider-sąsiedzi
-        printf("Dodawane krawedzie:\n");
+        //printf("Dodawane krawedzie:\n");
         for (int i = start_idx + 1; i <= end_idx; i++) {
             int neighbor = graph->group_list[i];
             
             if (neighbor == leader) {
-                printf("  UWAGA: pomijam petle lidera %d -- %d\n", leader, neighbor);
+                //printf("  UWAGA: pomijam petle lidera %d -- %d\n", leader, neighbor);
                 continue;
             }
 
@@ -136,16 +136,16 @@ void convert_csr_to_neighbors(Graph *graph) {
 
             if (!exists) {
                 add_edge(graph, leader, neighbor);
-                printf("  Dodano: %d -- %d\n", leader, neighbor);
+                //printf("  Dodano: %d -- %d\n", leader, neighbor);
             } else {
-                printf("  Krawedz %d -- %d juz istnieje\n", leader, neighbor);
+                //printf("  Krawedz %d -- %d juz istnieje\n", leader, neighbor);
             }
 
             // Przypisz sąsiada do grupy
             graph->group_assignment[neighbor] = g + 1;
         }
     }
-    printf("\nKoniec przetwarzania wszystkich grup\n");
+    //printf("\nKoniec przetwarzania wszystkich grup\n");
 }
 
 
