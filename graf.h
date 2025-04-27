@@ -12,13 +12,14 @@ typedef struct {
     int num_vertices;
     
     // Reprezentacja listy sąsiedztwa
-    int neighbors[MAX_VERTICES][MAX_NEIGHBORS];
-    int neighbor_count[MAX_VERTICES];
+    int **neighbors;       // każdy wierzchołek ma dynamiczną tablicę sąsiadów
+    int *neighbor_count;    // dynamiczna tablica liczby sąsiadów
+
     
     // Dodatkowe dane
-    int max_distances[MAX_VERTICES];
-    int group_assignment[MAX_VERTICES];
-    int component[MAX_VERTICES]; // Przynależność do składowej spójnej
+    int *max_distances;
+    int *group_assignment;
+    int *component; // Przynależność do składowej spójnej
     int num_components;          // Liczba składowych spójnych
     
     // Reprezentacja CSR
