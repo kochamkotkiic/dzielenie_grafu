@@ -246,3 +246,51 @@ void free_graph(Graph *graph) {
     graph->max_vertices = 0;
     graph->num_components = 0;
 }
+
+void save_graph_to_csrrg(Graph *graph, const char *filename) {
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        fprintf(stderr, "Blad otwierania pliku do zapisu: %s\n", filename);
+        return;
+    }
+
+    // Tymczasowe dane na ostatnie 2 sekcje
+    int *neighbors_out = NULL;
+    int *row_ptr_out = NULL;
+    create_neighbors_and_row_ptr_filtered(graph, &neighbors_out, &row_ptr_out);
+
+    // 1. max_vertices
+    fprintf(fp, "%d\n", graph->max_vertices);
+
+    // 2. col_index (oryginalne z pliku)
+    for (int i = 0; i < graph->num_vertices + graph->row_ptr[graph->num_vertices]; i++) {
+        fprintf(fp, "%d;", graph->col_index[i]);
+    }
+    fprintf(fp, "\n");
+
+    // 3. row_ptr (oryginalne z pliku)
+    for (int i = 0; i <= graph->num_vertices; i++) {
+        fprintf(fp, "%d;", graph->row_ptr[i]);
+    }
+    fprintf(fp, "\n");
+
+    // 4. neighbors (nowo wygenerowane)
+    int neighbors_count = row_ptr_out[graph->num_vertices]; // ile elementów
+    for (int i = 0; i < neighbors_count; i++) {
+        fprintf(fp, "%d;", neighbors_out[i]);
+    }
+    fprintf(fp, "\n");
+
+    // 5. row_ptr dla neighbors
+    for (int i = 0; i <= graph->num_vertices; i++) {
+        fprintf(fp, "%d;", row_ptr_out[i]);
+    }
+    fprintf(fp, "\n");
+
+    fclose(fp);
+
+    free(neighbors_out);
+    free(row_ptr_out);
+
+    printf("Zapisano graf do pliku: %s\n", filename);
+}
