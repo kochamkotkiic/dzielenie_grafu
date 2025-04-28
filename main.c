@@ -152,6 +152,8 @@ int main(int argc, char **argv) {
             for (int j = 0; j < group2_size; j++) {
                 printf("%d ", group2[j]);
             }
+            printf("\n");
+            print_graph(&graph);
         }
 
         //printf("\n\nSpojnosc grup:\n");
@@ -261,7 +263,7 @@ int main(int argc, char **argv) {
     } else {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
-        save_to_text(&graph, output_file);
+        //save_to_text(&graph, output_file);
     }
     free_graph(&graph);
     return 0;

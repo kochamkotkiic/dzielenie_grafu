@@ -254,6 +254,10 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
                 target_size++;
             }
         }
+
+        if(target_size < 2) continue;
+        margin = margin * target_size / 100;
+        printf("margin: %d\n", margin);
         target_size /= 2;
         
         stack[stack_size++] = center;
@@ -357,14 +361,17 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         if (size_diff > margin) {
             if (balance_groups(graph, group1, group1_size, group2, group2_size, margin)) {
                 split_graph(graph);
+                printf("exit 1\n");
                 return true;
             }
         } else {
             split_graph(graph);
+            printf("exit 2\n");
+            printf("ts: %d\n", target_size);
             return true;
         }
     }
-    
+    printf("exit 3\n");
     return false;
 }
 
@@ -396,5 +403,8 @@ void split_graph(Graph *graph) {
             graph->neighbors[i][j] = new_neighbors[j];
         }
         graph->neighbor_count[i] = new_neighbor_count;
+    }
+    for(int i=0; i<graph->num_vertices; i++){
+        graph->group_assignment[i] = 0;
     }
 }

@@ -209,6 +209,10 @@ void print_graph(const Graph *graph) {
         printf("\n");
     }
     printf("liczba kompartamentow: %d\n", graph->num_components);
+    for(int i = 0; i<graph->num_vertices; i++){
+        printf("%d: %d\n", i, graph->component[i]);
+    }
+    printf("\n");
 }
 
 // Zwalnianie całej pamięci grafu
