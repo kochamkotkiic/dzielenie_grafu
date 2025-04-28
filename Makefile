@@ -10,7 +10,7 @@ LIBS = -lm
 # Nazwa programu
 TARGET = graph_partition
 # Pliki źródłowe
-SRCS = main.c graf.c partitoon.c output.c
+SRCS = main.c graf.c partitions.c output.c
 # Pliki nagłówkowe
 HDRS = graf.h partitions.h output.h
 # Pliki obiektowe

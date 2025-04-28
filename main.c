@@ -199,23 +199,6 @@ int main(int argc, char **argv) {
         }
     }
 
-        // Wypisz wynik podziału
-        
-        /*printf("Grupa 1 (%d wierzcholkow): ", group1_size);
-        for (int j = 0; j < group1_size; j++) {
-            printf("%d ", group1[j]);
-        }
-        
-        printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);
-        for (int j = 0; j < group2_size; j++) {
-            printf("%d ", group2[j]);
-        }*/
-        
-        
-        //printf("\n\nSpojnosc grup:\n");
-        // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
-        // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
-        // printf("Grupa 2 jest %s\n", is_group_connected(&graph, 2) ? "spójna" : "niespójna");
 
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
