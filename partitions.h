@@ -8,7 +8,7 @@
 #define INF 1000000
 
 
-static void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component);
+void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component);
 void find_connected_components(Graph *graph);
 void dijkstra(Graph *graph, int start);
 bool is_component_connected(Graph *graph, const bool in_component[]);

@@ -20,41 +20,45 @@ void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_
 
 // ====================== ANALIZA SKŁADOWYCH ======================
 
+// ===== find_connected_components =====
 void find_connected_components(Graph *graph) {
-    bool visited[MAX_VERTICES] = {false};
+    int n = graph->num_vertices;
+    bool *visited = calloc(n, sizeof(bool));
+    if (!visited) { fprintf(stderr, "Brak pamięci\n"); return; }
     graph->num_components = 0;
-
-    for (int i = 0; i < graph->num_vertices; i++) {
+    for (int i = 0; i < n; i++) {
         if (!visited[i]) {
             dfs_mark(graph, i, visited, graph->component, graph->num_components);
             graph->num_components++;
         }
     }
+    free(visited);
 }
+
 
 // ====================== DIJKSTRA ======================
 
+// ===== dijkstra =====
 void dijkstra(Graph *graph, int start) {
-    int dist[MAX_VERTICES];
-    bool visited[MAX_VERTICES] = {false};
-
-    for (int i = 0; i < graph->num_vertices; i++) {
-        dist[i] = INF;
+    int n = graph->num_vertices;
+    int *dist    = malloc(n * sizeof(int));
+    bool *visited = calloc(n, sizeof(bool));
+    if (!dist || !visited) {
+        fprintf(stderr, "Brak pamięci\n");
+        free(dist); free(visited);
+        return;
     }
+    for (int i = 0; i < n; i++) dist[i] = INF;
     dist[start] = 0;
-
-    for (int count = 0; count < graph->num_vertices - 1; count++) {
-        int u = -1;
-        int min_dist = INF;
-        for (int v = 0; v < graph->num_vertices; v++) {
-            if (!visited[v] && dist[v] < min_dist) {
-                min_dist = dist[v];
+    for (int cnt = 0; cnt < n - 1; cnt++) {
+        int u = -1, min_d = INF;
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && dist[v] < min_d) {
+                min_d = dist[v];
                 u = v;
             }
         }
-
-        if (u == -1) break;
-
+        if (u < 0) break;
         visited[u] = true;
         for (int i = 0; i < graph->neighbor_count[u]; i++) {
             int v = graph->neighbors[u][i];
@@ -63,92 +67,85 @@ void dijkstra(Graph *graph, int start) {
             }
         }
     }
-
-    int max_dist = 0;
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (dist[i] != INF && dist[i] > max_dist) {
-            max_dist = dist[i];
-        }
-    }
-    graph->max_distances[start] = max_dist;
+    int max_d = 0;
+    for (int i = 0; i < n; i++)
+        if (dist[i] != INF && dist[i] > max_d)
+            max_d = dist[i];
+    graph->max_distances[start] = max_d;
+    free(dist);
+    free(visited);
 }
+
 
 // ====================== FUNKCJE DO SPÓJNOŚCI ======================
 
+// ===== is_component_connected =====
 bool is_component_connected(Graph *graph, const bool in_component[]) {
-    int start = -1;
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (in_component[i]) {
-            start = i;
-            break;
-        }
-    }
-    if (start == -1) return true;
+    int n = graph->num_vertices, start = -1;
+    for (int i = 0; i < n; i++) if (in_component[i]) { start = i; break; }
+    if (start < 0) return true;
 
-    bool visited[MAX_VERTICES] = {false};
-    int stack[MAX_VERTICES];
-    int stack_size = 0;
-    int visited_count = 0;
-    
-    stack[stack_size++] = start;
-    visited[start] = true;
-    
-    while (stack_size > 0) {
-        int current = stack[--stack_size];
-        visited_count++;
-        
-        for (int i = 0; i < graph->neighbor_count[current]; i++) {
-            int neighbor = graph->neighbors[current][i];
-            if (in_component[neighbor] && !visited[neighbor]) {
-                visited[neighbor] = true;
-                stack[stack_size++] = neighbor;
+    bool *visited = calloc(n, sizeof(bool));
+    int  *stack   = malloc(n * sizeof(int));
+    if (!visited || !stack) {
+        fprintf(stderr, "Brak pamięci\n");
+        free(visited); free(stack);
+        return false;
+    }
+
+    int sp = 0, cnt = 0;
+    stack[sp++] = start; visited[start] = true;
+    while (sp) {
+        int cur = stack[--sp];
+        cnt++;
+        for (int i = 0; i < graph->neighbor_count[cur]; i++) {
+            int nb = graph->neighbors[cur][i];
+            if (in_component[nb] && !visited[nb]) {
+                visited[nb] = true;
+                stack[sp++] = nb;
             }
         }
     }
-    
-    int component_size = 0;
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (in_component[i]) component_size++;
-    }
-    
-    return visited_count == component_size;
+
+    int comp_sz = 0;
+    for (int i = 0; i < n; i++) if (in_component[i]) comp_sz++;
+    bool ok = (cnt == comp_sz);
+    free(visited);
+    free(stack);
+    return ok;
 }
 
 // ====================== BALANSOWANIE GRUP ======================
+// funkcja porównująca dla qsort
+typedef struct {
+    int vertex;
+    int max_dist;
+} VI;
 
-bool balance_groups(Graph *graph, int group1[], int *group1_size, 
-                   int group2[], int *group2_size, int margin) {
-    typedef struct {
-        int vertex;
-        int max_dist;
-    } VertexInfo;
-    
-    // Przygotuj posortowaną listę wierzchołków z grupy 1
-    VertexInfo vertices[MAX_VERTICES];
-    int count = 0;
-    
-    for (int i = 0; i < *group1_size; i++) {
-        int v = group1[i];
-        vertices[count].vertex = v;
-        vertices[count].max_dist = graph->max_distances[v];
-        count++;
+int compare_vi(const void *a, const void *b) {
+    const VI *va = (const VI *)a;
+    const VI *vb = (const VI *)b;
+    return va->max_dist - vb->max_dist;
+}
+// ===== balance_groups =====
+bool balance_groups(Graph *graph, int group1[], int *group1_size,
+                    int group2[], int *group2_size, int margin) {
+    int n = graph->num_vertices, g1sz = *group1_size;
+    typedef struct { int vertex, max_dist; } VI;
+    VI *arr = malloc(g1sz * sizeof(VI));
+    if (!arr) { fprintf(stderr,"Brak pamięci\n"); return false; }
+    for (int i = 0; i < g1sz; i++) {
+        arr[i].vertex   = group1[i];
+        arr[i].max_dist = graph->max_distances[arr[i].vertex];
     }
+    // ===== pomocnicza funkcja porównująca =====
     
-    // Sortowanie przez wstawianie
-    for (int i = 1; i < count; i++) {
-        VertexInfo key = vertices[i];
-        int j = i - 1;
-        while (j >= 0 && vertices[j].max_dist > key.max_dist) {
-            vertices[j+1] = vertices[j];
-            j--;
-        }
-        vertices[j+1] = key;
-    }
+    qsort(arr, g1sz, sizeof(VI), compare_vi);
 
-    // Próbuj przenosić wierzchołki od najmniejszego max_distance
-    for (int i = 0; i < count; i++) {
-        int v = vertices[i].vertex;
-        
+
+    for (int i = 0; i < g1sz; i++) {
+    int v = arr[i].vertex;
+ 
         // Sprawdź czy wierzchołek nadal jest w grupie 1
         bool in_group1 = false;
         for (int j = 0; j < *group1_size; j++) {
@@ -214,19 +211,17 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
             return balance_groups(graph, group1, group1_size, group2, group2_size, margin);
         }
     }
-    
+    free(arr);
     return false;
 }
 
 // ====================== GŁÓWNA LOGIKA PODZIAŁU ======================
 
-bool partition_graph(Graph *graph, int group1[], int *group1_size,
-                    int group2[], int *group2_size, int margin) {
-    // Inicjalizacja
-    *group1_size = 0;
-    *group2_size = 0;
-    
-    // Dla każdej składowej próbuj podziału
+bool partition_graph(Graph *graph, int group1[], int *g1sz, int group2[], int *g2sz, int margin) {
+    int n = graph->num_vertices;
+    *g1sz = *g2sz = 0;
+    find_connected_components(graph);
+        
     for (int comp = 0; comp < graph->num_components; comp++) {
         // Znajdź centralny wierzchołek w składowej
         int center = -1;
@@ -243,8 +238,8 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         if (center == -1) continue;
         
         // Przydziel wierzchołki do grup DFS-em
-        bool visited[MAX_VERTICES] = {false};
-        int stack[MAX_VERTICES];
+        bool *visited = calloc(n, sizeof(bool));
+        int *stack = malloc(n * sizeof(int));
         int stack_size = 0;
         int target_size = 0;
         
@@ -258,10 +253,10 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         
         stack[stack_size++] = center;
         visited[center] = true;
-        group1[(*group1_size)++] = center;
+        group1[(*g1sz)++] = center;
         graph->group_assignment[center] = 1;
         
-        while (stack_size > 0 && *group1_size < target_size) {
+        while (stack_size > 0 && *g1sz < target_size) {
             int current = stack[--stack_size];
             
             int max_dist = -1;
@@ -280,7 +275,7 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
                 stack[stack_size++] = current;
                 stack[stack_size++] = next_vertex;
                 visited[next_vertex] = true;
-                group1[(*group1_size)++] = next_vertex;
+                group1[(*g1sz)++] = next_vertex;
                 graph->group_assignment[next_vertex] = 1;
             }
         }
@@ -288,14 +283,16 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         // Reszta do grupy 2
         for (int i = 0; i < graph->num_vertices; i++) {
             if (graph->component[i] == comp && !visited[i]) {
-                group2[(*group2_size)++] = i;
+                group2[(*g2sz)++] = i;
                 graph->group_assignment[i] = 2;
             }
         }
+        free(visited);
+        free(stack);
         
         // Sprawdź spójność grupy 2
         bool group2_included[MAX_VERTICES] = {false};
-        for (int i = 0; i < *group2_size; i++) {
+        for (int i = 0; i < *g2sz; i++) {
             group2_included[group2[i]] = true;
         }
         
@@ -305,18 +302,18 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
             int largest_size = 0;
             bool processed[MAX_VERTICES] = {false};
             
-            for (int i = 0; i < *group2_size; i++) {
+            for (int i = 0; i < *g2sz; i++) {
                 int v = group2[i];
                 if (!processed[v]) {
                     bool current_component[MAX_VERTICES] = {false};
                     int current_size = 0;
                     int component_stack[MAX_VERTICES];
                     int cstack_size = 0;
-                    
+            
                     component_stack[cstack_size++] = v;
                     current_component[v] = true;
                     processed[v] = true;
-                    
+            
                     while (cstack_size > 0) {
                         int cv = component_stack[--cstack_size];
                         current_size++;
@@ -339,23 +336,23 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
             }
             
             // Przenieś wierzchołki spoza największej składowej do grupy 1
-            int new_group2_size = 0;
-            for (int i = 0; i < *group2_size; i++) {
+            int new_g2sz = 0;
+            for (int i = 0; i < *g2sz; i++) {
                 int v = group2[i];
                 if (largest_component[v]) {
-                    group2[new_group2_size++] = v;
+                    group2[new_g2sz++] = v;
                 } else {
-                    group1[(*group1_size)++] = v;
+                    group1[(*g1sz)++] = v;
                     graph->group_assignment[v] = 1;
                 }
             }
-            *group2_size = new_group2_size;
+            *g2sz = new_g2sz;
         }
         
         // Sprawdź warunek marginesu i ewentualnie balansuj
-        int size_diff = abs(*group1_size - *group2_size);
+        int size_diff = abs(*g1sz - *g2sz);
         if (size_diff > margin) {
-            if (balance_groups(graph, group1, group1_size, group2, group2_size, margin)) {
+            if (balance_groups(graph, group1, g1sz, group2, g2sz, margin)) {
                 split_graph(graph);
                 return true;
             }
@@ -368,33 +365,21 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
     return false;
 }
 
+// ===== split_graph =====
 void split_graph(Graph *graph) {
-    int new_component_id = graph->num_components; // nowa składowa
-    // Aktualizacja przypisań komponentów
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (graph->group_assignment[i] == 2) {
-            graph->component[i] = new_component_id;
-        }
-    }
-    graph->num_components++;
+    int n = graph->num_vertices;
+    int newc = graph->num_components++;
+    for (int i = 0; i < n; i++)
+        if (graph->group_assignment[i] == 2)
+            graph->component[i] = newc;
 
-    // Usuwanie krawędzi między grupami
-    for (int i = 0; i < graph->num_vertices; i++) {
-        int new_neighbors[MAX_NEIGHBORS];
-        int new_neighbor_count = 0;
-
+    for (int i = 0; i < n; i++) {
+        int w = 0;
         for (int j = 0; j < graph->neighbor_count[i]; j++) {
-            int neighbor = graph->neighbors[i][j];
-            // Zostaw tylko krawędzie wewnątrz tej samej grupy
-            if (graph->group_assignment[i] == graph->group_assignment[neighbor]) {
-                new_neighbors[new_neighbor_count++] = neighbor;
-            }
+            int nb = graph->neighbors[i][j];
+            if (graph->group_assignment[i] == graph->group_assignment[nb])
+                graph->neighbors[i][w++] = nb;
         }
-        
-        // Nadpisanie nowej listy sąsiadów
-        for (int j = 0; j < new_neighbor_count; j++) {
-            graph->neighbors[i][j] = new_neighbors[j];
-        }
-        graph->neighbor_count[i] = new_neighbor_count;
+        graph->neighbor_count[i] = w;
     }
 }
