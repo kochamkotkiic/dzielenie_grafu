@@ -7,7 +7,7 @@
 
 // ====================== FUNKCJE POMOCNICZE ======================
 
-static void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component) {
+void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component) {
     visited[v] = true;
     component[v] = current_component;
     for (int i = 0; i < graph->neighbor_count[v]; i++) {

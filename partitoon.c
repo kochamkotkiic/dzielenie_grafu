@@ -7,7 +7,7 @@
 
 // ====================== FUNKCJE POMOCNICZE ======================
 
-static void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component) {
+void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_component) {
     visited[v] = true;
     component[v] = current_component;
     for (int i = 0; i < graph->neighbor_count[v]; i++) {
@@ -217,155 +217,153 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
 
 // ====================== GŁÓWNA LOGIKA PODZIAŁU ======================
 
-bool partition_graph(Graph *graph, int group1[], int *g1sz,
-    int group2[], int *g2sz, int margin) {
-int n = graph->num_vertices;
-*g1sz = *g2sz = 0;
-find_connected_components(graph);
-
-for (int comp = 0; comp < graph->num_components; comp++) {
-// Znajdź centralny wierzchołek w składowej
-int center = -1;
-int min_max_dist = INT_MAX;
-for (int i = 0; i < graph->num_vertices; i++) {
-if (graph->component[i] == comp) {
-dijkstra(graph, i);
-if (graph->max_distances[i] < min_max_dist) {
-   min_max_dist = graph->max_distances[i];
-   center = i;
+bool partition_graph(Graph *graph, int group1[], int *g1sz, int group2[], int *g2sz, int margin) {
+    int n = graph->num_vertices;
+    *g1sz = *g2sz = 0;
+    find_connected_components(graph);
+        
+    for (int comp = 0; comp < graph->num_components; comp++) {
+        // Znajdź centralny wierzchołek w składowej
+        int center = -1;
+        int min_max_dist = INT_MAX;
+        for (int i = 0; i < graph->num_vertices; i++) {
+            if (graph->component[i] == comp) {
+                dijkstra(graph, i);
+                if (graph->max_distances[i] < min_max_dist) {
+                    min_max_dist = graph->max_distances[i];
+                    center = i;
+                }
+            }
+        }
+        if (center == -1) continue;
+        
+        // Przydziel wierzchołki do grup DFS-em
+        bool *visited = calloc(n, sizeof(bool));
+        int *stack = malloc(n * sizeof(int));
+        int stack_size = 0;
+        int target_size = 0;
+        
+        // Policz wierzchołki w tej składowej
+        for (int i = 0; i < graph->num_vertices; i++) {
+            if (graph->component[i] == comp) {
+                target_size++;
+            }
+        }
+        target_size /= 2;
+        
+        stack[stack_size++] = center;
+        visited[center] = true;
+        group1[(*g1sz)++] = center;
+        graph->group_assignment[center] = 1;
+        
+        while (stack_size > 0 && *g1sz < target_size) {
+            int current = stack[--stack_size];
+            
+            int max_dist = -1;
+            int next_vertex = -1;
+            for (int i = 0; i < graph->neighbor_count[current]; i++) {
+                int neighbor = graph->neighbors[current][i];
+                if (!visited[neighbor] && graph->component[neighbor] == comp) {
+                    if (graph->max_distances[neighbor] > max_dist) {
+                        max_dist = graph->max_distances[neighbor];
+                        next_vertex = neighbor;
+                    }
+                }
+            }
+            
+            if (next_vertex != -1) {
+                stack[stack_size++] = current;
+                stack[stack_size++] = next_vertex;
+                visited[next_vertex] = true;
+                group1[(*g1sz)++] = next_vertex;
+                graph->group_assignment[next_vertex] = 1;
+            }
+        }
+        
+        // Reszta do grupy 2
+        for (int i = 0; i < graph->num_vertices; i++) {
+            if (graph->component[i] == comp && !visited[i]) {
+                group2[(*g2sz)++] = i;
+                graph->group_assignment[i] = 2;
+            }
+        }
+        free(visited);
+        free(stack);
+        
+        // Sprawdź spójność grupy 2
+        bool group2_included[MAX_VERTICES] = {false};
+        for (int i = 0; i < *g2sz; i++) {
+            group2_included[group2[i]] = true;
+        }
+        
+        if (!is_component_connected(graph, group2_included)) {
+            // Znajdź największą spójną część w grupie 2
+            bool largest_component[MAX_VERTICES] = {false};
+            int largest_size = 0;
+            bool processed[MAX_VERTICES] = {false};
+            
+            for (int i = 0; i < *g2sz; i++) {
+                int v = group2[i];
+                if (!processed[v]) {
+                    bool current_component[MAX_VERTICES] = {false};
+                    int current_size = 0;
+                    int component_stack[MAX_VERTICES];
+                    int cstack_size = 0;
+            
+                    component_stack[cstack_size++] = v;
+                    current_component[v] = true;
+                    processed[v] = true;
+            
+                    while (cstack_size > 0) {
+                        int cv = component_stack[--cstack_size];
+                        current_size++;
+                        
+                        for (int j = 0; j < graph->neighbor_count[cv]; j++) {
+                            int neighbor = graph->neighbors[cv][j];
+                            if (graph->group_assignment[neighbor] == 2 && !current_component[neighbor]) {
+                                current_component[neighbor] = true;
+                                processed[neighbor] = true;
+                                component_stack[cstack_size++] = neighbor;
+                            }
+                        }
+                    }
+                    
+                    if (current_size > largest_size) {
+                        largest_size = current_size;
+                        memcpy(largest_component, current_component, sizeof(largest_component));
+                    }
+                }
+            }
+            
+            // Przenieś wierzchołki spoza największej składowej do grupy 1
+            int new_g2sz = 0;
+            for (int i = 0; i < *g2sz; i++) {
+                int v = group2[i];
+                if (largest_component[v]) {
+                    group2[new_g2sz++] = v;
+                } else {
+                    group1[(*g1sz)++] = v;
+                    graph->group_assignment[v] = 1;
+                }
+            }
+            *g2sz = new_g2sz;
+        }
+        
+        // Sprawdź warunek marginesu i ewentualnie balansuj
+        int size_diff = abs(*g1sz - *g2sz);
+        if (size_diff > margin) {
+            if (balance_groups(graph, group1, g1sz, group2, g2sz, margin)) {
+                split_graph(graph);
+                return true;
+            }
+        } else {
+            split_graph(graph);
+            return true;
+        }
+    }
+    
+    return false;
 }
-}
-}
-if (center == -1) continue;
-
-// Przydziel wierzchołki do grup DFS-em
-bool *visited = calloc(n, sizeof(bool));
-int  *stack   = malloc(n * sizeof(int));
-int stack_size = 0;
-int target_size = 0;
-
-// Policz wierzchołki w tej składowej
-for (int i = 0; i < graph->num_vertices; i++) {
-if (graph->component[i] == comp) {
-target_size++;
-}
-}
-target_size /= 2;
-
-stack[stack_size++] = center;
-visited[center] = true;
-group1[(*g1sz)++] = center;
-graph->group_assignment[center] = 1;
-
-while (stack_size > 0 && *g1sz < target_size) {
-int current = stack[--stack_size];
-
-int max_dist = -1;
-int next_vertex = -1;
-for (int i = 0; i < graph->neighbor_count[current]; i++) {
-int neighbor = graph->neighbors[current][i];
-if (!visited[neighbor] && graph->component[neighbor] == comp) {
-   if (graph->max_distances[neighbor] > max_dist) {
-       max_dist = graph->max_distances[neighbor];
-       next_vertex = neighbor;
-   }
-}
-}
-
-if (next_vertex != -1) {
-stack[stack_size++] = current;
-stack[stack_size++] = next_vertex;
-visited[next_vertex] = true;
-group1[(*g1sz)++] = next_vertex;
-graph->group_assignment[next_vertex] = 1;
-}
-}
-
-// Reszta do grupy 2
-for (int i = 0; i < graph->num_vertices; i++) {
-if (graph->component[i] == comp && !visited[i]) {
-group2[(*g2sz)++] = i;
-graph->group_assignment[i] = 2;
-}
-}
-free(visited);
-free(stack);
-
-// Sprawdź spójność grupy 2
-bool group2_included[MAX_VERTICES] = {false};
-for (int i = 0; i < *g2sz; i++) {
-group2_included[group2[i]] = true;
-}
-
-if (!is_component_connected(graph, group2_included)) {
-// Znajdź największą spójną część w grupie 2
-bool largest_component[MAX_VERTICES] = {false};
-int largest_size = 0;
-bool processed[MAX_VERTICES] = {false};
-
-for (int i = 0; i < *g2sz; i++) {
-int v = group2[i];
-if (!processed[v]) {
-   bool current_component[MAX_VERTICES] = {false};
-   int current_size = 0;
-   int component_stack[MAX_VERTICES];
-   int cstack_size = 0;
-   
-   component_stack[cstack_size++] = v;
-   current_component[v] = true;
-   processed[v] = true;
-   
-   while (cstack_size > 0) {
-       int cv = component_stack[--cstack_size];
-       current_size++;
-       
-       for (int j = 0; j < graph->neighbor_count[cv]; j++) {
-           int neighbor = graph->neighbors[cv][j];
-           if (graph->group_assignment[neighbor] == 2 && !current_component[neighbor]) {
-               current_component[neighbor] = true;
-               processed[neighbor] = true;
-               component_stack[cstack_size++] = neighbor;
-           }
-       }
-   }
-   
-   if (current_size > largest_size) {
-       largest_size = current_size;
-       memcpy(largest_component, current_component, sizeof(largest_component));
-   }
-}
-}
-
-// Przenieś wierzchołki spoza największej składowej do grupy 1
-int new_g2sz = 0;
-for (int i = 0; i < *g2sz; i++) {
-int v = group2[i];
-if (largest_component[v]) {
-   group2[new_g2sz++] = v;
-} else {
-   group1[(*g1sz)++] = v;
-   graph->group_assignment[v] = 1;
-}
-}
-*g2sz = new_g2sz;
-}
-
-// Sprawdź warunek marginesu i ewentualnie balansuj
-int size_diff = abs(*g1sz - *g2sz);
-if (size_diff > margin) {
-if (balance_groups(graph, group1, g1sz, group2, g2sz, margin)) {
-split_graph(graph);
-return true;
-}
-} else {
-split_graph(graph);
-return true;
-}
-}
-
-return false;
-}
-
 
 // ===== split_graph =====
 void split_graph(Graph *graph) {
