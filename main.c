@@ -28,20 +28,21 @@ int main(int argc, char *argv[]) {
 
     // Zmienna do liczenia wykonanych podziałów
     int partition_count = 0;
-    bool czy_podział = true;
+    bool czy_podzial = true;
     // Pętla wykonująca podziały
-    while(czy_podział == true && partition_count < num_partitions) {
-        printf("\nPodzial #%d:\n", num_partitions);
+    find_connected_components(&graph);
+    while(czy_podzial && partition_count < num_partitions) {
+        printf("\nPodzial #%d:\n", partition_count);
 
         // Tablice na grupy
         int group1[MAX_VERTICES], group2[MAX_VERTICES];
         int group1_size = 0, group2_size = 0;
 
         // Wykonaj podział grafu
-        czy_podział = partition_graph(&graph, group1, &group1_size, group2, &group2_size, margin);
+        czy_podzial = partition_graph(&graph, group1, &group1_size, group2, &group2_size, margin);
         print_graph(&graph);
         // Wypisz wynik podziału
-        /*
+        
         printf("Grupa 1 (%d wierzcholkow): ", group1_size);
         for (int j = 0; j < group1_size; j++) {
             printf("%d ", group1[j]);
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < group2_size; j++) {
             printf("%d ", group2[j]);
         }
-        */
+        
         
         //printf("\n\nSpojnosc grup:\n");
         // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup

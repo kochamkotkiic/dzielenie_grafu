@@ -271,13 +271,16 @@ void print_graph(const Graph *graph) {
     */
     printf("\nLista sasiedztwa:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
-        printf("%d (grupa %d): ", i, graph->group_assignment[i]);
+        printf("%d (grupa %d): ", i, graph->component[i]);
         for (int j = 0; j < graph->neighbor_count[i]; j++) {
             printf("%d ", graph->neighbors[i][j]);
         }
         printf("\n");
     }
+    printf("liczba kompartamentow: %d\n", graph->num_components);
 }
+
+void print_component()
 
 void free_graph(Graph *graph) {
     if (graph->col_index) free(graph->col_index);

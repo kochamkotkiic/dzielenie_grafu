@@ -14,6 +14,7 @@ void dijkstra(Graph *graph, int start);
 bool is_component_connected(Graph *graph, const bool in_component[]);
 bool balance_groups(Graph *graph, int group1[], int *group1_size, int group2[], int *group2_size, int margin);
 bool partition_graph(Graph *graph, int group1[], int *group1_size, int group2[], int *group2_size, int margin);
+void split_graph(Graph *graph);
 
 
 #endif // PARTITIONS_H

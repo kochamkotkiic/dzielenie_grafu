@@ -225,7 +225,6 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
     // Inicjalizacja
     *group1_size = 0;
     *group2_size = 0;
-    find_connected_components(graph);
     
     // Dla każdej składowej próbuj podziału
     for (int comp = 0; comp < graph->num_components; comp++) {
