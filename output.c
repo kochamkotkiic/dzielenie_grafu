@@ -66,6 +66,7 @@ int save_binary(Graph *graph, Partition *partitions, int count, char *base_name)
 }
 
 int save_to_text(Graph *graph, const char *filename) {
+    
     FILE *fp = fopen(filename, "w");
     if (!fp) {
         perror("Nie można otworzyć pliku do zapisu");

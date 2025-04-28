@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     int num_cuts = 1;
     float margin_percent = 10.0;
     int binary_output = 0;
-    int terminal_output = 1;
+    int terminal_output = 0;
     print_usage();
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 && i+1 < argc) {
@@ -92,7 +92,6 @@ int main(int argc, char **argv) {
             margin_percent = atof(argv[++i]);
         } else if (strcmp(argv[i], "-b") == 0) {
             binary_output = 1;
-            terminal_output = 0;
         } else if (strcmp(argv[i], "-t") == 0) {
             terminal_output = 1;
         } else {
@@ -130,6 +129,17 @@ int main(int argc, char **argv) {
     int successful_cuts = 0;
     find_connected_components(&graph);
     bool partition_success = true;
+
+    Partition *partitions = malloc((num_cuts + 1) * sizeof(Partition));
+    if (!partitions) {
+        fprintf(stderr, "Błąd alokacji pamięci dla partitions\n");
+        return 1;
+    }
+    for (int i = 0; i < num_cuts + 1; i++) {
+        partitions[i].size = 0;
+        partitions[i].vertices = NULL;
+    }
+
 
     while(successful_cuts < num_cuts && partition_success) {
         printf("\nPodzial #%d:\n", successful_cuts);
@@ -198,11 +208,11 @@ int main(int argc, char **argv) {
     }
 
     
-    // Tworzenie tablicy Partition na podstawie aktualnego przypisania grup
-    for (int i = 0; i < successful_cuts + 1; i++) {
-        partitions[i].size = 0;
-    }
-
+     // Tworzenie tablicy Partition na podstawie aktualnego przypisania grup
+     for (int i = 0; i < successful_cuts + 1; i++) {
+         partitions[i].size = 0;
+     }
+        
     // Najpierw policz ile wierzchołków przypada na każdą część
     for (int i = 0; i < graph.num_vertices; i++) {
         int group = graph.group_assignment[i];
@@ -246,15 +256,15 @@ int main(int argc, char **argv) {
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
     }
-    */
+    
    
     if (binary_output) {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.bin", output_base);
-        //save_binary(&graph, partitions, successful_cuts, output_file);
+        save_binary(&graph, partitions, successful_cuts, output_file);
         read_binary("test_output","wynik.bin");
         for (int i = 0; i < successful_cuts + 1; i++) {
-            //free(partitions[i].vertices);
+            free(partitions[i].vertices);
         }
     } else {
         char output_file[256];
