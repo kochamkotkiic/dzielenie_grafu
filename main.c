@@ -127,7 +127,41 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    Partition *partitions = malloc((num_cuts + 1) * sizeof(Partition));
+    int successful_cuts = 0;
+    find_connected_components(&graph);
+    bool partition_success = true;
+
+    while(successful_cuts < num_cuts && partition_success) {
+        printf("\nPodzial #%d:\n", successful_cuts);
+
+        // Tablice na grupy
+        int group1[MAX_VERTICES], group2[MAX_VERTICES];
+        int group1_size = 0, group2_size = 0;
+
+        // Wykonaj podział grafu
+        partition_success = partition_graph(&graph, group1, &group1_size, group2, &group2_size, margin_percent);
+        if(partition_success){
+            successful_cuts++;
+            // Wypisz wynik podziału
+            printf("Grupa 1 (%d wierzcholkow): ", group1_size);
+            for (int j = 0; j < group1_size; j++) {
+                printf("%d ", group1[j]);
+            }
+            
+            printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);
+            for (int j = 0; j < group2_size; j++) {
+                printf("%d ", group2[j]);
+            }
+        }
+
+        //printf("\n\nSpojnosc grup:\n");
+        // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
+        // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
+        // printf("Grupa 2 jest %s\n", is_group_connected(&graph, 2) ? "spójna" : "niespójna");
+
+        // Zwiększamy licznik wykonanych podziałów
+    }
+    /*Partition *partitions = malloc((num_cuts + 1) * sizeof(Partition));
     if (!partitions) {
         fprintf(stderr, "Błąd alokacji pamięci dla partitions\n");
         return 1;
@@ -210,18 +244,19 @@ int main(int argc, char **argv) {
         // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
         // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
         // printf("Grupa 2 jest %s\n", is_group_connected(&graph, 2) ? "spójna" : "niespójna");
-
+/*
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
     }
+    */
    
     if (binary_output) {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.bin", output_base);
-        save_binary(&graph, partitions, successful_cuts, output_file);
+        //save_binary(&graph, partitions, successful_cuts, output_file);
         read_binary("test_output","wynik.bin");
         for (int i = 0; i < successful_cuts + 1; i++) {
-            free(partitions[i].vertices);
+            //free(partitions[i].vertices);
         }
     } else {
         char output_file[256];
