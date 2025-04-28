@@ -38,5 +38,6 @@ bool is_connected(const Graph *graph);
 void print_graph(const Graph *graph);
 void free_graph(Graph *graph);
 void save_graph_to_csrrg(Graph *graph, const char *filename);
+void create_neighbors_and_row_ptr_filtered(Graph *graph, int **neighbors_out, int **row_ptr_out);
 
 #endif // GRAF_H

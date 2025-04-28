@@ -295,3 +295,56 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
     printf("Zapisano graf do pliku: %s\n", filename);
 }
 
+void create_neighbors_and_row_ptr_filtered(Graph *graph, int **neighbors_out, int **row_ptr_out) {
+    int n = graph->num_vertices;
+    int estimated_size = 0;
+
+    // Najpierw policz, ile będzie potrzebne pamięci (przybliżenie)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < graph->neighbor_count[i]; j++) {
+            int neighbor = graph->neighbors[i][j];
+            if (neighbor > i) {
+                estimated_size++;
+            }
+        }
+        if (estimated_size > 0) {
+            estimated_size++; // bo dodamy też indeks wierzchołka na początku grupy
+        }
+    }
+
+    *neighbors_out = (int *)malloc(estimated_size * sizeof(int));
+    *row_ptr_out = (int *)malloc((n + 1) * sizeof(int)); // +1 standardowo
+
+    if (*neighbors_out == NULL || *row_ptr_out == NULL) {
+        fprintf(stderr, "Blad alokacji pamieci w create_neighbors_and_row_ptr_filtered\n");
+        exit(1);
+    }
+
+    int idx = 0;
+    (*row_ptr_out)[0] = 0; // początek
+
+    for (int i = 0; i < n; i++) {
+        int start_idx = idx;
+        int neighbors_added = 0;
+
+        // Sprawdź sąsiadów i filtruj
+        for (int j = 0; j < graph->neighbor_count[i]; j++) {
+            int neighbor = graph->neighbors[i][j];
+            if (neighbor > i) { // zapisz tylko jeśli neighbor ma większy indeks
+                if (neighbors_added == 0) {
+                    (*neighbors_out)[idx++] = i; // dodaj wierzchołek tylko raz na początek
+                }
+                (*neighbors_out)[idx++] = neighbor;
+                neighbors_added++;
+            }
+        }
+
+        if (neighbors_added == 0) {
+            // wierzchołek "pusty", nic nie dodano
+            (*row_ptr_out)[i + 1] = (*row_ptr_out)[i];
+        } else {
+            // zapisano coś
+            (*row_ptr_out)[i + 1] = idx;
+        }
+    }
+}
