@@ -37,5 +37,6 @@ int load_graph_from_csrrg(Graph *graph, const char *filename);
 bool is_connected(const Graph *graph);
 void print_graph(const Graph *graph);
 void free_graph(Graph *graph);
+void save_graph_to_csrrg(Graph *graph, const char *filename);
 
 #endif // GRAF_H

@@ -294,3 +294,4 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
 
     printf("Zapisano graf do pliku: %s\n", filename);
 }
+
