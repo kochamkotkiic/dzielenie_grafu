@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     float margin_percent = 10.0;
     int binary_output = 0;
     int terminal_output = 0;
-    print_usage();
+    //print_usage();
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 && i+1 < argc) {
             input_file = argv[++i];
@@ -169,13 +169,37 @@ int main(int argc, char **argv) {
 
         // Zwiększamy licznik wykonanych podziałów
     }
-
     
-        //printf("\n\nSpojnosc grup:\n");
-        // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
-        // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
-        // printf("Grupa 2 jest %s\n", is_group_connected(&graph, 2) ? "spójna" : "niespójna");
-/*
+    
+    
+     // Tworzenie tablicy Partition na podstawie aktualnego przypisania grup
+    for (int i = 0; i < successful_cuts + 1; i++) {
+        partitions[i].size = 0;
+    }
+        
+    // Najpierw policz ile wierzchołków przypada na każdą część
+    for (int i = 0; i < graph.num_vertices; i++) {
+        int group = graph.group_assignment[i];
+        if (group >= 1 && group <= successful_cuts + 1) {
+            partitions[group - 1].size++;
+        }
+    }
+
+    // Teraz alokuj pamięć na wierzchołki dla każdej części
+    for (int i = 0; i < successful_cuts + 1; i++) {
+        partitions[i].vertices = malloc(partitions[i].size * sizeof(int));
+        partitions[i].size = 0; // zresetuj do 0 żeby wstawić w kolejnym kroku
+    }
+
+    // Ponowne przypisanie wierzchołków do partitions
+    for (int i = 0; i < graph.num_vertices; i++) {
+        int group = graph.group_assignment[i];
+        if (group >= 1 && group <= successful_cuts + 1) {
+            partitions[group - 1].vertices[partitions[group - 1].size++] = i;
+        }
+    }
+
+
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
     }
@@ -192,7 +216,7 @@ int main(int argc, char **argv) {
     } else {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
-        //save_to_text(&graph, output_file);
+        save_to_text(&graph, output_file);
     }
     free_graph(&graph);
     return 0;
