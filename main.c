@@ -134,16 +134,12 @@ int main(int argc, char **argv) {
     while(successful_cuts < num_cuts && partition_success) {
         printf("\nPodzial #%d:\n", successful_cuts);
 
-        // Tablice na grupy
-        int group1[MAX_VERTICES], group2[MAX_VERTICES];
-        int group1_size = 0, group2_size = 0;
-
         // Wykonaj podział grafu
-        partition_success = partition_graph(&graph, group1, &group1_size, group2, &group2_size, margin_percent);
+        partition_success = partition_graph(&graph, margin_percent);
         if(partition_success){
             successful_cuts++;
             // Wypisz wynik podziału
-            printf("Grupa 1 (%d wierzcholkow): ", group1_size);
+            /*printf("Grupa 1 (%d wierzcholkow): ", group1_size);
             for (int j = 0; j < group1_size; j++) {
                 printf("%d ", group1[j]);
             }
@@ -152,7 +148,7 @@ int main(int argc, char **argv) {
             for (int j = 0; j < group2_size; j++) {
                 printf("%d ", group2[j]);
             }
-            printf("\n");
+            printf("\n");*/
             print_graph(&graph);
         }
 

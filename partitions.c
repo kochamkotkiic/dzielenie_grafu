@@ -116,8 +116,8 @@ bool is_component_connected(Graph *graph, const bool in_component[]) {
 
 // ====================== BALANSOWANIE GRUP ======================
 
-bool balance_groups(Graph *graph, int group1[], int *group1_size, 
-                   int group2[], int *group2_size, int margin) {
+bool balance_groups(Graph *graph, int group1[], int group1_size, 
+                   int group2[], int group2_size, int margin) {
     typedef struct {
         int vertex;
         int max_dist;
@@ -127,7 +127,7 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
     VertexInfo vertices[MAX_VERTICES];
     int count = 0;
     
-    for (int i = 0; i < *group1_size; i++) {
+    for (int i = 0; i < group1_size; i++) {
         int v = group1[i];
         vertices[count].vertex = v;
         vertices[count].max_dist = graph->max_distances[v];
@@ -151,7 +151,7 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
         
         // Sprawdź czy wierzchołek nadal jest w grupie 1
         bool in_group1 = false;
-        for (int j = 0; j < *group1_size; j++) {
+        for (int j = 0; j < group1_size; j++) {
             if (group1[j] == v) {
                 in_group1 = true;
                 break;
@@ -164,9 +164,9 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
         
         // Sprawdź spójność grupy 1 bez tego wierzchołka
         bool group1_connected = true;
-        if (*group1_size > 1) {
+        if (group1_size > 1) {
             bool group1_included[MAX_VERTICES] = {false};
-            for (int j = 0; j < *group1_size; j++) {
+            for (int j = 0; j < group1_size; j++) {
                 if (group1[j] != v) {
                     group1_included[group1[j]] = true;
                 }
@@ -176,9 +176,9 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
         
         // Sprawdź spójność grupy 2 z nowym wierzchołkiem
         bool group2_connected = true;
-        if (*group2_size > 0) {
+        if (group2_size > 0) {
             bool group2_included[MAX_VERTICES] = {false};
-            for (int j = 0; j < *group2_size; j++) {
+            for (int j = 0; j < group2_size; j++) {
                 group2_included[group2[j]] = true;
             }
             group2_included[v] = true;
@@ -191,21 +191,21 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
         if (group1_connected && group2_connected) {
             // Wykonaj rzeczywiste przeniesienie
             graph->group_assignment[v] = 2;
-            group2[(*group2_size)++] = v;
+            group2[(group2_size)++] = v;
             
             // Usuń z grupy 1
-            for (int j = 0; j < *group1_size; j++) {
+            for (int j = 0; j < group1_size; j++) {
                 if (group1[j] == v) {
-                    for (int k = j; k < *group1_size - 1; k++) {
+                    for (int k = j; k < group1_size - 1; k++) {
                         group1[k] = group1[k+1];
                     }
-                    (*group1_size)--;
+                    (group1_size)--;
                     break;
                 }
             }
             
             // Sprawdź warunek marginesu
-            int size_diff = abs(*group1_size - *group2_size);
+            int size_diff = abs(group1_size - group2_size);
             if (size_diff <= margin) {
                 return true;
             }
@@ -220,11 +220,9 @@ bool balance_groups(Graph *graph, int group1[], int *group1_size,
 
 // ====================== GŁÓWNA LOGIKA PODZIAŁU ======================
 
-bool partition_graph(Graph *graph, int group1[], int *group1_size,
-                    int group2[], int *group2_size, int margin) {
+bool partition_graph(Graph *graph, int margin) {
     // Inicjalizacja
-    *group1_size = 0;
-    *group2_size = 0;
+
     
     // Dla każdej składowej próbuj podziału
     for (int comp = 0; comp < graph->num_components; comp++) {
@@ -241,7 +239,8 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
             }
         }
         if (center == -1) continue;
-        
+        int group1[MAX_VERTICES], group2[MAX_VERTICES];
+        int group1_size = 0, group2_size = 0;
         // Przydziel wierzchołki do grup DFS-em
         bool visited[MAX_VERTICES] = {false};
         int stack[MAX_VERTICES];
@@ -262,10 +261,10 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         
         stack[stack_size++] = center;
         visited[center] = true;
-        group1[(*group1_size)++] = center;
+        group1[(group1_size)++] = center;
         graph->group_assignment[center] = 1;
         
-        while (stack_size > 0 && *group1_size < target_size) {
+        while (stack_size > 0 && group1_size < target_size) {
             int current = stack[--stack_size];
             
             int max_dist = -1;
@@ -284,7 +283,7 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
                 stack[stack_size++] = current;
                 stack[stack_size++] = next_vertex;
                 visited[next_vertex] = true;
-                group1[(*group1_size)++] = next_vertex;
+                group1[(group1_size)++] = next_vertex;
                 graph->group_assignment[next_vertex] = 1;
             }
         }
@@ -292,14 +291,14 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
         // Reszta do grupy 2
         for (int i = 0; i < graph->num_vertices; i++) {
             if (graph->component[i] == comp && !visited[i]) {
-                group2[(*group2_size)++] = i;
+                group2[(group2_size)++] = i;
                 graph->group_assignment[i] = 2;
             }
         }
         
         // Sprawdź spójność grupy 2
         bool group2_included[MAX_VERTICES] = {false};
-        for (int i = 0; i < *group2_size; i++) {
+        for (int i = 0; i < group2_size; i++) {
             group2_included[group2[i]] = true;
         }
         
@@ -309,7 +308,7 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
             int largest_size = 0;
             bool processed[MAX_VERTICES] = {false};
             
-            for (int i = 0; i < *group2_size; i++) {
+            for (int i = 0; i < group2_size; i++) {
                 int v = group2[i];
                 if (!processed[v]) {
                     bool current_component[MAX_VERTICES] = {false};
@@ -344,20 +343,29 @@ bool partition_graph(Graph *graph, int group1[], int *group1_size,
             
             // Przenieś wierzchołki spoza największej składowej do grupy 1
             int new_group2_size = 0;
-            for (int i = 0; i < *group2_size; i++) {
+            for (int i = 0; i < group2_size; i++) {
                 int v = group2[i];
                 if (largest_component[v]) {
                     group2[new_group2_size++] = v;
                 } else {
-                    group1[(*group1_size)++] = v;
+                    group1[(group1_size)++] = v;
                     graph->group_assignment[v] = 1;
                 }
             }
-            *group2_size = new_group2_size;
+            group2_size = new_group2_size;
         }
-        
+        printf("comp: %d\n", comp);
+        printf("Grupa 1 (%d wierzcholkow): ", group1_size);
+        for (int j = 0; j < group1_size; j++) {
+            printf("%d ", group1[j]);
+        }
+        printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);            
+        for (int j = 0; j < group2_size; j++) {
+            printf("%d ", group2[j]);
+        }
+        printf("\n");
         // Sprawdź warunek marginesu i ewentualnie balansuj
-        int size_diff = abs(*group1_size - *group2_size);
+        int size_diff = abs(group1_size - group2_size);
         if (size_diff > margin) {
             if (balance_groups(graph, group1, group1_size, group2, group2_size, margin)) {
                 split_graph(graph);

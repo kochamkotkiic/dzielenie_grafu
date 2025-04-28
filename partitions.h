@@ -12,8 +12,8 @@ void dfs_mark(Graph *graph, int v, bool visited[], int component[], int current_
 void find_connected_components(Graph *graph);
 void dijkstra(Graph *graph, int start);
 bool is_component_connected(Graph *graph, const bool in_component[]);
-bool balance_groups(Graph *graph, int group1[], int *group1_size, int group2[], int *group2_size, int margin);
-bool partition_graph(Graph *graph, int group1[], int *group1_size, int group2[], int *group2_size, int margin);
+bool balance_groups(Graph *graph, int group1[], int group1_size, int group2[], int group2_size, int margin);
+bool partition_graph(Graph *graph, int margin);
 void split_graph(Graph *graph);
 
 
