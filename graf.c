@@ -262,9 +262,13 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
     // 1. max_vertices
     fprintf(fp, "%d\n", graph->max_vertices);
 
-    // 2. col_index (oryginalne z pliku)
-    for (int i = 0; i < graph->row_ptr[graph->num_vertices]; i++) {
-        fprintf(fp, "%d;", graph->col_index[i]);
+    // 2. col_index
+    int col_len = graph->row_ptr[graph->num_vertices];
+    for (int i = 0; i < col_len; i++) {
+        if (i != col_len - 1)
+            fprintf(fp, "%d;", graph->col_index[i]);
+        else
+            fprintf(fp, "%d", graph->col_index[i]); // ostatni bez średnika
     }
     fprintf(fp, "\n");
 
@@ -286,6 +290,7 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
             fprintf(fp, "%d", graph->component[i]); // ostatni bez średnika
     }
     fprintf(fp, "\n");
+
 
 
     // 5. group_assignment
