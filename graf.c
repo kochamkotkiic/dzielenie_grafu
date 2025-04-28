@@ -282,23 +282,22 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
     fprintf(fp, "\n");
 
 
-    // 4. component
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (i != graph->num_vertices - 1)
-            fprintf(fp, "%d;", graph->component[i]);
+    // 4. neighbors (nowo wygenerowane)
+    int neighbors_count = row_ptr_out[graph->num_vertices]; // ile wszystkich sąsiadów
+    for (int i = 0; i < neighbors_count; i++) {
+        if (i != neighbors_count - 1)
+            fprintf(fp, "%d;", neighbors_out[i]);
         else
-            fprintf(fp, "%d", graph->component[i]); // ostatni bez średnika
+            fprintf(fp, "%d", neighbors_out[i]); // bez średnika na końcu
     }
     fprintf(fp, "\n");
 
-
-
-    // 5. group_assignment
-    for (int i = 0; i < graph->num_vertices; i++) {
-        if (i != graph->num_vertices - 1)
-            fprintf(fp, "%d;", graph->group_assignment[i]);
+    // 5. row_ptr dla neighbors
+    for (int i = 0; i <= graph->num_vertices; i++) {
+        if (i != graph->num_vertices)
+            fprintf(fp, "%d;", row_ptr_out[i]);
         else
-            fprintf(fp, "%d", graph->group_assignment[i]); // ostatni bez średnika
+            fprintf(fp, "%d", row_ptr_out[i]); // bez średnika na końcu
     }
     fprintf(fp, "\n");
 
