@@ -202,12 +202,17 @@ void print_graph(const Graph *graph) {
     printf("Graf (wierzcholki: %d/%d):\n", graph->num_vertices, graph->max_vertices);
     printf("\nLista sasiedztwa:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
-        printf("%d (grupa %d): ", i, graph->group_assignment[i]);
+        printf("%d (grupa %d): ", i, graph->component[i]);
         for (int j = 0; j < graph->neighbor_count[i]; j++) {
             printf("%d ", graph->neighbors[i][j]);
         }
         printf("\n");
     }
+    printf("liczba kompartamentow: %d\n", graph->num_components);
+    for(int i = 0; i<graph->num_vertices; i++){
+        printf("%d: %d\n", i, graph->component[i]);
+    }
+    printf("\n");
 }
 
 // Zwalnianie całej pamięci grafu
