@@ -169,85 +169,8 @@ int main(int argc, char **argv) {
 
         // Zwiększamy licznik wykonanych podziałów
     }
-    /*Partition *partitions = malloc((num_cuts + 1) * sizeof(Partition));
-    if (!partitions) {
-        fprintf(stderr, "Błąd alokacji pamięci dla partitions\n");
-        return 1;
-    }
-    for (int i = 0; i < num_cuts + 1; i++) {
-        partitions[i].size = 0;
-        partitions[i].vertices = NULL;
-    }
-    /// Wykonaj podziały
-    int successful_cuts = 0;
-    for (int i = 0; i < num_cuts; i++) {
-        int *group1 = malloc(graph.num_vertices * sizeof(int));
-        int *group2 = malloc(graph.num_vertices * sizeof(int));
-        if (!group1 || !group2) {
-            fprintf(stderr, "Błąd alokacji pamięci\n");
-            free(group1);
-            free(group2);
-            break;
-        }
-
-        int group1_size = 0, group2_size = 0;
-        if (partition_graph(&graph, group1, &group1_size, group2, &group2_size, margin_percent)) {
-            successful_cuts++;
-            
-            // Aktualizacja przypisań grup
-            for (int j = 0; j < group1_size; j++) {
-                graph.group_assignment[group1[j]] = 1;
-            }
-            for (int j = 0; j < group2_size; j++) {
-                graph.group_assignment[group2[j]] = 2;
-            }
-        }
-
-        free(group1);
-        free(group2);
-    }
 
     
-     // Tworzenie tablicy Partition na podstawie aktualnego przypisania grup
-     for (int i = 0; i < successful_cuts + 1; i++) {
-         partitions[i].size = 0;
-     }
-        
-    // Najpierw policz ile wierzchołków przypada na każdą część
-    for (int i = 0; i < graph.num_vertices; i++) {
-        int group = graph.group_assignment[i];
-        if (group >= 1 && group <= successful_cuts + 1) {
-            partitions[group - 1].size++;
-        }
-    }
-
-    // Teraz alokuj pamięć na wierzchołki dla każdej części
-    for (int i = 0; i < successful_cuts + 1; i++) {
-        partitions[i].vertices = malloc(partitions[i].size * sizeof(int));
-        partitions[i].size = 0; // zresetuj do 0 żeby wstawić w kolejnym kroku
-    }
-
-    // Ponowne przypisanie wierzchołków do partitions
-    for (int i = 0; i < graph.num_vertices; i++) {
-        int group = graph.group_assignment[i];
-        if (group >= 1 && group <= successful_cuts + 1) {
-            partitions[group - 1].vertices[partitions[group - 1].size++] = i;
-        }
-    }
-
-        // Wypisz wynik podziału
-        
-        printf("Grupa 1 (%d wierzcholkow): ", group1_size);
-        for (int j = 0; j < group1_size; j++) {
-            printf("%d ", group1[j]);
-        }
-        
-        printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);
-        for (int j = 0; j < group2_size; j++) {
-            printf("%d ", group2[j]);
-        }
-        
-        
         //printf("\n\nSpojnosc grup:\n");
         // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
         // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
@@ -273,5 +196,5 @@ int main(int argc, char **argv) {
     }
     free_graph(&graph);
     return 0;
-    
+    */
 }
