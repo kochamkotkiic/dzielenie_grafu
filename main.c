@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
     }
 
     save_graph_to_csrrg(&graph, output_base);
-
+/*
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
     }
@@ -219,6 +219,7 @@ int main(int argc, char **argv) {
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
         save_to_text(&graph, output_file);
     }
+    */
     free_graph(&graph);
     return 0;
 }

@@ -263,7 +263,7 @@ void save_graph_to_csrrg(Graph *graph, const char *filename) {
     fprintf(fp, "%d\n", graph->max_vertices);
 
     // 2. col_index (oryginalne z pliku)
-    for (int i = 0; i < graph->num_vertices + graph->row_ptr[graph->num_vertices]; i++) {
+    for (int i = 0; i < graph->row_ptr[graph->num_vertices]; i++) {
         fprintf(fp, "%d;", graph->col_index[i]);
     }
     fprintf(fp, "\n");
