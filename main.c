@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
     } else {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
-        save_to_text(&graph, output_file);
+        save_graph_to_csrrg(&graph, output_base);
     }
     */
     free_graph(&graph);
