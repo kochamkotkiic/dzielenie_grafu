@@ -247,7 +247,7 @@ void free_graph(Graph *graph) {
     graph->num_components = 0;
 }
 
-void save_graph_to_csrrg(Graph *graph, const char *filename) {
+/*void save_graph_to_csrrg(Graph *graph, const char *filename) {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
         fprintf(stderr, "Blad otwierania pliku do zapisu: %s\n", filename);
@@ -362,4 +362,4 @@ void create_neighbors_and_row_ptr_filtered(Graph *graph, int **neighbors_out, in
             (*row_ptr_out)[i + 1] = idx;
         }
     }
-}
+}*/

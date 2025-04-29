@@ -160,7 +160,10 @@ int main(int argc, char **argv) {
             }
             printf("\n");*/
             print_graph(&graph);
-        }
+        }else {
+            fprintf(stderr, "Błąd: Nie udało się wykonać podziału %d\n", successful_cuts+1);
+            break;  // Przerwij pętlę jeśli podział się nie udał
+        } 
 
         //printf("\n\nSpojnosc grup:\n");
         // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
