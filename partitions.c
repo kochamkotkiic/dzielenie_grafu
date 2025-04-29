@@ -256,7 +256,7 @@ bool partition_graph(Graph *graph, int margin) {
 
         if(target_size < 2) continue;
         margin = margin * target_size / 100;
-        printf("margin: %d\n", margin);
+        
         target_size /= 2;
         
         stack[stack_size++] = center;
@@ -354,32 +354,23 @@ bool partition_graph(Graph *graph, int margin) {
             }
             group2_size = new_group2_size;
         }
-        printf("comp: %d\n", comp);
-        printf("Grupa 1 (%d wierzcholkow): ", group1_size);
-        for (int j = 0; j < group1_size; j++) {
-            printf("%d ", group1[j]);
-        }
-        printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);            
-        for (int j = 0; j < group2_size; j++) {
-            printf("%d ", group2[j]);
-        }
-        printf("\n");
+        
+       
         // Sprawdź warunek marginesu i ewentualnie balansuj
         int size_diff = abs(group1_size - group2_size);
         if (size_diff > margin) {
             if (balance_groups(graph, group1, group1_size, group2, group2_size, margin)) {
                 split_graph(graph);
-                printf("exit 1\n");
+              
                 return true;
             }
         } else {
             split_graph(graph);
-            printf("exit 2\n");
-            printf("ts: %d\n", target_size);
+          
             return true;
         }
     }
-    printf("exit 3\n");
+   
     return false;
 }
 

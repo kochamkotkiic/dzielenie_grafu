@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-void print_partition_terminal(Graph *graph, int cut_count);
+
 void print_usage() {
     printf("Użycie: -i <input.csrrg> -o <output_base> -p <liczba_przecięć> -m <margines%%> [-b] [-t]\n");
     printf("   -i : Plik wejściowy w formacie CSR (.csrrg)\n");
@@ -130,99 +130,38 @@ int main(int argc, char **argv) {
     find_connected_components(&graph);
     bool partition_success = true;
 
-    Partition *partitions = malloc((num_cuts + 1) * sizeof(Partition));
-    if (!partitions) {
-        fprintf(stderr, "Błąd alokacji pamięci dla partitions\n");
-        return 1;
-    }
-    for (int i = 0; i < num_cuts + 1; i++) {
-        partitions[i].size = 0;
-        partitions[i].vertices = NULL;
-    }
-
 
     while(successful_cuts < num_cuts && partition_success) {
-        printf("\nPodzial #%d:\n", successful_cuts);
+        
 
         // Wykonaj podział grafu
         partition_success = partition_graph(&graph, margin_percent);
         if(partition_success){
             successful_cuts++;
-            // Wypisz wynik podziału
-            /*printf("Grupa 1 (%d wierzcholkow): ", group1_size);
-            for (int j = 0; j < group1_size; j++) {
-                printf("%d ", group1[j]);
-            }
-            
-            printf("\nGrupa 2 (%d wierzcholkow): ", group2_size);
-            for (int j = 0; j < group2_size; j++) {
-                printf("%d ", group2[j]);
-            }
-            printf("\n");*/
-            print_graph(&graph);
+        
         }else {
             fprintf(stderr, "Błąd: Nie udało się wykonać podziału %d\n", successful_cuts+1);
             break;  // Przerwij pętlę jeśli podział się nie udał
         } 
-
-        //printf("\n\nSpojnosc grup:\n");
-        // Zakładając, że masz funkcję `is_group_connected`, sprawdzamy spójność grup
-        // printf("Grupa 1 jest %s\n", is_group_connected(&graph, 1) ? "spójna" : "niespójna");
-        // printf("Grupa 2 jest %s\n", is_group_connected(&graph, 2) ? "spójna" : "niespójna");
-
-        // Zwiększamy licznik wykonanych podziałów
-    }
-    
-    
-    
-     // Tworzenie tablicy Partition na podstawie aktualnego przypisania grup
-    for (int i = 0; i < successful_cuts + 1; i++) {
-        partitions[i].size = 0;
-    }
-        
-    // Najpierw policz ile wierzchołków przypada na każdą część
-    for (int i = 0; i < graph.num_vertices; i++) {
-        int group = graph.group_assignment[i];
-        if (group >= 1 && group <= successful_cuts + 1) {
-            partitions[group - 1].size++;
-        }
+ 
     }
 
-    // Teraz alokuj pamięć na wierzchołki dla każdej części
-    for (int i = 0; i < successful_cuts + 1; i++) {
-        partitions[i].vertices = malloc(partitions[i].size * sizeof(int));
-        partitions[i].size = 0; // zresetuj do 0 żeby wstawić w kolejnym kroku
-    }
-
-    // Ponowne przypisanie wierzchołków do partitions
-    for (int i = 0; i < graph.num_vertices; i++) {
-        int group = graph.group_assignment[i];
-        if (group >= 1 && group <= successful_cuts + 1) {
-            partitions[group - 1].vertices[partitions[group - 1].size++] = i;
-        }
-    }
-
-    
-/*
     if (terminal_output) {
         print_partition_terminal(&graph, successful_cuts);
     }
     
-   
     if (binary_output) {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.bin", output_base);
-        save_binary(&graph, partitions, successful_cuts, output_file);
+        save_graph_to_binary(&graph, output_file);
         read_binary("test_output","wynik.bin");
-        for (int i = 0; i < successful_cuts + 1; i++) {
-            free(partitions[i].vertices);
-        }
+        
     } else {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
         save_graph_to_csrrg(&graph, output_base);
     }
-    */
+    
     free_graph(&graph);
     return 0;
 }
