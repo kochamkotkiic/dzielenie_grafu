@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#define MAX_VERTICES 1000
-#define MAX_NEIGHBORS 50
+#define MAX_VERTICES 4000
+#define MAX_NEIGHBORS 4000
 //#define INF INT_MAX
 
 typedef struct {

@@ -35,7 +35,7 @@ clean:
 test: $(TARGET)
 	@echo "Uruchamianie testów..."
 	@mkdir -p test_output
-	@./$(TARGET) -i test_data/grafTest.csrrg -o test_output/wynik -m 10 -b
+	@./$(TARGET) -i test_data/grafTest.csrrg -o test_output/wynik -m 10 
 	@echo "Testy zakończone. Wyniki w test_output/"
 
 # Test jednostkowy funkcji podziału
