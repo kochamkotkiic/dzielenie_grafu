@@ -10,6 +10,8 @@
 #include <string.h>
 
 #define MAX_FILENAME_LEN 256
+#define MAX_EDGES 1000000
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -353,4 +355,58 @@ void print_partition_terminal(Graph *graph, int successful_cuts) {
         printf(";%d", cumulative);
     }
     printf("\n");
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+void save_graph_to_binary(Graph *graph, const char *filename) {
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) {
+        perror("Nie mozna otworzyc pliku do zapisu");
+        return;
+    }
+
+    // Utwórz neighbors_out i row_ptr_out
+    int neighbors_out[MAX_EDGES];
+    int row_ptr_out[MAX_VERTICES + 1];
+
+    int neighbor_pos = 0;
+    row_ptr_out[0] = 0;
+
+    for (int i = 0; i < graph->num_vertices; i++) {
+        int start_pos = neighbor_pos;
+        bool has_neighbors = false;
+        for (int j = 0; j < graph->neighbor_count[i]; j++) {
+            int neighbor = graph->neighbors[i][j];
+            if (neighbor > i) { // Zapobiegamy podwójnym krawędziom
+                if (!has_neighbors) {
+                    neighbors_out[neighbor_pos++] = i;
+                    has_neighbors = true;
+                }
+                neighbors_out[neighbor_pos++] = neighbor;
+            }
+        }
+        row_ptr_out[i + 1] = neighbor_pos;
+    }
+
+    int neighbors_count = row_ptr_out[graph->num_vertices];
+
+    // 1. Zapisz max_vertices
+    fwrite(&(graph->max_vertices), sizeof(int), 1, fp);
+
+    // 2. Zapisz col_index
+    int col_index_size = graph->num_vertices;
+    fwrite(graph->col_index, sizeof(int), col_index_size, fp);
+
+    // 3. Zapisz row_ptr
+    fwrite(graph->row_ptr, sizeof(int), graph->num_vertices + 1, fp);
+
+    // 4. Zapisz neighbors_out
+    fwrite(neighbors_out, sizeof(int), neighbors_count, fp);
+
+    // 5. Zapisz row_ptr_out
+    fwrite(row_ptr_out, sizeof(int), graph->num_vertices + 1, fp);
+
+    fclose(fp);
 }
