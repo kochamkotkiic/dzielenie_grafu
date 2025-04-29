@@ -14,64 +14,6 @@ void print_usage() {
     printf("   -b : Zapis binarny (domyślnie tekstowy)\n");
     printf("   -t : Wypisz wynik w terminalu\n");
 }
-#include <stdio.h>
-
-void read_binary(char *folder, char *filename) {
-    // Tworzymy pełną ścieżkę do pliku
-    char filepath[256];
-    snprintf(filepath, sizeof(filepath), "%s/%s", folder, filename);
-    FILE *fp = fopen(filepath, "rb");
-    if (!fp) {
-        perror("Nie można otworzyć pliku");
-        return;
-    }
-
-    int n, k, m;
-    // Odczyt nagłówka
-    if (fread(&n, sizeof(int), 1, fp) != 1 || 
-        fread(&k, sizeof(int), 1, fp) != 1 || 
-        fread(&m, sizeof(int), 1, fp) != 1) {
-        perror("Błąd odczytu nagłówka");
-        fclose(fp);
-        return;
-    }
-
-    printf("Nagłówek:\n");
-    printf("n = %d, k = %d, m = %d\n", n, k, m);
-
-    // Odczyt listy wierzchołków w każdej części
-    for (int i = 0; i < k + 1; i++) {
-        int size;
-        if (fread(&size, sizeof(int), 1, fp) != 1) {
-            perror("Błąd odczytu rozmiaru części");
-            fclose(fp);
-            return;
-        }
-
-        printf("Część %d, rozmiar = %d\n", i, size);
-
-        if (size > 0) {
-            int *vertices = malloc(size * sizeof(int));
-            if (fread(vertices, sizeof(int), size, fp) != size) {
-                perror("Błąd odczytu wierzchołków");
-                fclose(fp);
-                free(vertices);
-                return;
-            }
-
-            printf("Wierzchołki: ");
-            for (int j = 0; j < size; j++) {
-                printf("%d ", vertices[j]);
-            }
-            printf("\n");
-            free(vertices);
-        }
-    }
-
-    fclose(fp);
-}
-
-
 
 int main(int argc, char **argv) {
     char *input_file = NULL;
@@ -154,12 +96,11 @@ int main(int argc, char **argv) {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.bin", output_base);
         save_graph_to_binary(&graph, output_file);
-        read_binary("test_output","wynik.bin");
         
     } else {
         char output_file[256];
         snprintf(output_file, sizeof(output_file), "%s.csrrg", output_base);
-        save_graph_to_csrrg(&graph, output_base);
+        save_graph_to_csrrg(&graph, output_file);
     }
     
     free_graph(&graph);
